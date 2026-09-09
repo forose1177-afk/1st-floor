@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>약장 위치 찾기 - [보험약]</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 700px; margin: 20px auto; padding: 0 15px; background: #f4f6f9; color: #333; }
+        h2 { text-align: center; color: #2c3e50; }
+        .search-box { width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; margin-bottom: 20px; outline: none; transition: border-color 0.3s; }
+        .search-box:focus { border-color: #3498db; }
+        
+        .cabinet-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .cabinet-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #2980b9; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        
+        /* 5열 그리드 레이아웃 */
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .cell { 
+            border: 1px solid #e0e0e0; 
+            padding: 12px 5px; 
+            text-align: center; 
+            border-radius: 6px; 
+            background: #fafafa;
+            min-height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        .cell.empty { border: none; background: transparent; }
+        .cell.highlight { background: #ffeaa7; border-color: #fdcb6e; color: #d35400; transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        #resultMsg { text-align: center; margin-top: 15px; font-size: 16px; font-weight: bold; min-height: 24px; color: #e74c3c; }
+
+        @media(max-width: 500px) {
+            .cell { font-size: 13px; padding: 10px 2px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>약장 위치 찾기</h2>
+    <input type="text" id="searchBox" class="search-box" placeholder="약 번호나 이름을 입력하세요 (예: 61, 57TB)..." onkeyup="searchMedicine()">
+
+    <div id="resultMsg"></div>
+
+    <div class="cabinet-container">
+        <div class="cabinet-title">[보험약]</div>
+        <div class="grid" id="cabinetGrid"></div>
+    </div>
+
+    <script>
+        // 업로드해주신 [보험약] 표 데이터 (행/열 구조 그대로 반영, 빈 칸은 null)
+        const insuranceCabinet = [
+            ["61", "42N", "29N", "12N", "63"],
+            ["87", "66", "06N", "23N", "60"],
+            ["07N", "35N", "18N", "28N", "08N"],
+            ["26N", "32N", "24N", "17N", "01N"],
+            ["55N", "27N", "45N", "58", "57TB"],
+            ["54N", "21N", "20N", "02N", "10N"],
+            ["83", "33N", "22N", "70", null],
+            ["50N", "37N", "49N", null, null],
+            ["15N", "59", null, null, null]
+        ];
+
+        function renderGrid(highlightVal = "") {
+            const grid = document.getElementById('cabinetGrid');
+            grid.innerHTML = '';
+
+            insuranceCabinet.forEach((row, rowIndex) => {
+                row.forEach((item, colIndex) => {
+                    const div = document.createElement('div');
+                    if (item === null) {
+                        div.className = 'cell empty';
+                    } else {
+                        div.className = 'cell';
+                        div.innerText = item;
+                        
+                        // 검색어와 일치하는 경우 (대소문자 무시, 부분 일치)
+                        if (highlightVal && item.toLowerCase().includes(highlightVal.toLowerCase())) {
+                            div.classList.add('highlight');
+                        }
+                    }
+                    grid.appendChild(div);
+                });
+            });
+        }
+
+        function searchMedicine() {
+            const query = document.getElementById('searchBox'].value.trim();
+            const msg = document.getElementById('resultMsg');
+
+            if (!query) {
+                renderGrid("");
+                msg.innerText = "";
+                return;
+            }
+
+            renderGrid(query);
+
+            // 검색 결과 매칭 확인
+            let foundCount = 0;
+            insuranceCabinet.forEach((row, rIdx) => {
+                row.forEach((item, cIdx) => {
+                    if (item && item.toLowerCase().includes(query.toLowerCase())) {
+                        foundCount++;
+                    }
+                });
+            });
+
+            if (foundCount > 0) {
+                msg.innerText = `🔍 '[보험약]' 약장에서 '${query}'을(를) 찾았습니다!`;
+            } else {
+                msg.innerText = `❌ 일치하는 약 번호가 없습니다.`;
+            }
+        }
+
+        // 초기 화면 렌더링
+        renderGrid("");
+    </script>
+</body>
+</html>
